@@ -1,0 +1,129 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+class Voucher {
+private:
+    string subject_name;
+    int points;
+    string teacher_name;
+
+public:
+    
+    Voucher(string name, int pts, string teacher) {
+        subject_name = name;
+        points = pts;
+        teacher_name = teacher;
+    }
+
+    
+    string getName() const {
+        return subject_name;
+    }
+    int getPoints() const {
+        return points;
+    }
+    string getTeacher() const {
+        return teacher_name;
+    }
+};
+
+class Student {
+private:
+    string PIP;
+    string group;
+    vector<Voucher> vouchers;
+
+public:
+    
+    Student(string pip, string grp, vector<Voucher> vchrs) {
+        PIP = pip;
+        group = grp;
+        vouchers = vchrs;
+    }
+
+   
+    string getPIP() const {
+        return PIP;
+    }
+    string getGroup() const {
+        return group;
+    }
+    vector<Voucher> getVouchers() const {
+        return vouchers;
+    }
+
+    // tot points of st.
+    int getTotalPoints() const {
+        int total_points = 0;
+        for (Voucher v : vouchers) {
+            total_points += v.getPoints();
+        }
+        return total_points;
+    }
+};
+
+// читання данних from file
+vector<Student> readDataFromFile(string file_name) {
+    ifstream file;
+    file.open(file_name);
+    vector<Student> students;
+
+    while (!file.eof()) {
+        string pip, group, v_name, t_name;
+        int points;
+        vector<Voucher> vouchers;
+
+        // піб
+        file >> pip >> group >> points;
+
+        // читання тал
+        for (int i = 0; i < points; i++) {
+            file >> v_name >> points >> t_name;
+            Voucher v(v_name, points, t_name);
+            vouchers.push_back(v);
+        }
+
+        //Створення об'єєкту
+        Student s(pip, group, vouchers);
+        students.push_back(s);
+    }
+    file.close();
+    return students;
+}
+
+// Function to print 
+void printStudentsWithLowPoints(const vector<Student>& students) {
+    cout << "Students with 0-10 points in their report card:" << endl;
+    for (Student s : students) {
+        int total_points = s.getTotalPoints();
+        if (total_points >= 0 && total_points <= 10) {
+            cout << s.getPIP() << " " << s.getGroup() << endl;
+        }
+    }
+}
+
+// Function
+void printSortedTeacherNames(const vector<Student>& students) {
+    vector<string> teacher_names;
+    for (Student s : students) {
+        for (Voucher v : s.getVouchers()) {
+            teacher_names.push_back(v.getTeacher());
+        }
+    }
+    sort(teacher_names.begin(), teacher_names.end());
+    teacher_names.erase(unique(teacher_names.begin(), teacher_names.end()), teacher_names.end());
+
+    cout << "Sorted names of teachers (no repetitions):" << endl;
+    for (string name : teacher_names) {
+        cout << name << endl;
+    }
+}
+
+int main() {
+    vector<Student> students = readDataFromFile("data.txt");
+    printStudentsWithLowPoints(students);
+}
